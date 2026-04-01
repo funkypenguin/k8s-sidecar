@@ -17,9 +17,8 @@ LABEL org.opencontainers.image.licenses=MIT
 ENV         PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY --from=builder /app/.venv ./.venv
-COPY        src/ ./src/
 ENV PATH="/app/.venv/bin:$PATH"
 # Use the nobody user's numeric UID/GID to satisfy MustRunAsNonRoot PodSecurityPolicies
 # https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups
 USER        65534:65534
-CMD         [ "python", "-u", "/app/src/sidecar.py" ]
+CMD         [ "python", "-u", "-m", "sidecar" ]
