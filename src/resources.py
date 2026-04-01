@@ -8,7 +8,7 @@ import sys
 import traceback
 import json
 from collections import defaultdict
-from threading import Thread
+from threading import Thread, Event
 from time import sleep
 
 from kubernetes import client, watch
@@ -421,12 +421,12 @@ def _watch_resource_iterator(label, label_value, target_folder, request_url, req
             request(request_url, request_method, enable_5xx, request_payload)
 
 
-def _watch_resource_loop(mode, label, label_value, target_folder, request_url, request_method, request_payload,
+def _watch_resource_loop(shutdown_event, mode, label, label_value, target_folder, request_url, request_method, request_payload,
                          namespace, folder_annotation, resource, unique_filenames, script, enable_5xx,
                          ignore_already_processed, resource_name):
     _initialize_kubeclient_configuration()  # ensure k8s config in child
 
-    while True:
+    while not shutdown_event.is_set():
         try:
             if mode == "SLEEP" or (namespace != 'ALL' and resource_name):
                 list_resources(label, label_value, target_folder, request_url, request_method, request_payload,
@@ -453,12 +453,14 @@ def _watch_resource_loop(mode, label, label_value, target_folder, request_url, r
             logger.error(f"Received unknown exception: {e}\n")
             traceback.print_exc()
             sleep(int(os.getenv("ERROR_THROTTLE_SLEEP", 5)))
+    logger.info(f"Shutdown event received, stopping watcher for {namespace}/{resource}.")
 
 
 def watch_for_changes(mode, label, label_value, target_folder, request_url, request_method, request_payload,
                       current_namespace, folder_annotation, resources, unique_filenames, script, enable_5xx,
                       ignore_already_processed, resource_name):
-    processes = _start_watcher_processes(current_namespace, folder_annotation, label,
+    shutdown_event = Event()
+    processes = _start_watcher_processes(shutdown_event, current_namespace, folder_annotation, label,
                                          label_value, request_method, mode, request_payload, resources,
                                          target_folder, unique_filenames, script, request_url, enable_5xx,
                                          ignore_already_processed, resource_name)
@@ -476,23 +478,24 @@ def watch_for_changes(mode, label, label_value, target_folder, request_url, requ
                 died = True
         if died:
             logger.fatal("At least one process died. Stopping and exiting")
+            shutdown_event.set()
             for proc, ns, resource in processes:
                 if proc.is_alive():
-                    proc.terminate()
+                    proc.join(timeout=5)
             # Exit with a non-zero status code to indicate an error
             sys.exit(1)
 
         sleep(5)
 
 
-def _start_watcher_processes(namespace, folder_annotation, label, label_value, request_method,
+def _start_watcher_processes(shutdown_event, namespace, folder_annotation, label, label_value, request_method,
                              mode, request_payload, resources, target_folder, unique_filenames, script, request_url,
                              enable_5xx, ignore_already_processed, resource_name):
     processes = []
     for resource in resources:
         for ns in namespace.split(','):
             proc = Thread(target=_watch_resource_loop,
-                           args=(mode, label, label_value, target_folder, request_url, request_method, request_payload,
+                           args=(shutdown_event, mode, label, label_value, target_folder, request_url, request_method, request_payload,
                                  ns, folder_annotation, resource, unique_filenames, script, enable_5xx,
                                  ignore_already_processed, resource_name)
                            )
