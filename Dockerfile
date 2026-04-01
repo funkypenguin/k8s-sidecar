@@ -16,7 +16,8 @@ LABEL org.opencontainers.image.description="K8s sidecar image to collect configm
 LABEL org.opencontainers.image.licenses=MIT
 ENV         PYTHONUNBUFFERED=1
 WORKDIR /app
-COPY --from=builder /app /app
+COPY --from=builder /app/.venv ./.venv
+COPY        src/ ./src/
 ENV PATH="/app/.venv/bin:$PATH"
 # Use the nobody user's numeric UID/GID to satisfy MustRunAsNonRoot PodSecurityPolicies
 # https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups
