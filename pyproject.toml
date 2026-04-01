@@ -14,18 +14,3 @@ dependencies = [
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
-
-[tool.ruff]
-line-length = 88
-src = ["src/requests", "tests"]
-target-version = "py312"
-
-[tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # pyflakes
-    "I",      # isort
-    "UP",     # pyupgrade
-    "T10",    # flake8-debugger (replaces debug-statements hook)
-]
