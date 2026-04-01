@@ -9,6 +9,7 @@ on:
     paths:
       - 'src/**'
       - 'Dockerfile'
+      - 'Dockerfile.armv7'
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -62,14 +63,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push (amd64, arm64)
         if: steps.tagging.outputs.part != '' && steps.tagging.outputs.part != 'none'
-        id: docker_build
+        id: docker_build_main
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           push: true
           provenance: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            docker.io/kiwigrid/k8s-sidecar:latest
+            docker.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
+            quay.io/kiwigrid/k8s-sidecar:latest
+            quay.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
+            ghcr.io/kiwigrid/k8s-sidecar:latest
+            ghcr.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
+
+      - name: Build and push (arm/v7)
+        if: steps.tagging.outputs.part != '' && steps.tagging.outputs.part != 'none'
+        id: docker_build_armv7
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          file: ./Dockerfile.armv7
+          push: true
+          provenance: true
+          platforms: linux/arm/v7
           tags: |
             docker.io/kiwigrid/k8s-sidecar:latest
             docker.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
