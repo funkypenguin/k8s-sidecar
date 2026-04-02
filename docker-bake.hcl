@@ -1,15 +1,9 @@
-variable "TAG" {
-  default = "latest"
-}
 
 target "common" {
   tags = [
     "docker.io/kiwigrid/k8s-sidecar:latest",
-    "docker.io/kiwigrid/k8s-sidecar:${TAG}",
     "quay.io/kiwigrid/k8s-sidecar:latest",
-    "quay.io/kiwigrid/k8s-sidecar:${TAG}",
     "ghcr.io/kiwigrid/k8s-sidecar:latest",
-    "ghcr.io/kiwigrid/k8s-sidecar:${TAG}"
   ]
 }
 
