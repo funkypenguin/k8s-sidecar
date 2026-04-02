@@ -64,16 +64,16 @@ jobs:
 
       - name: Build and push test images
         if: steps.tagging.outputs.part
-        id: docker_build
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        uses: docker/bake-action@82490499d2e5613fcead7e128237ef0b0ea210f7 # v7.0.0
         with:
           push: true
           provenance: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          tags: |
-            docker.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
-            quay.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
-            ghcr.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
+          files: |
+            docker-bake.hcl
+          set: |
+            common.tags=docker.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
+            common.tags=quay.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
+            common.tags=ghcr.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
 
       - name: Build Changelog
         if: steps.tagging.outputs.part
