@@ -71,7 +71,9 @@ jobs:
           files: |
             docker-bake.hcl
           set: |
-            *.vars.TAG=${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
+            common.tags+=docker.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
+            common.tags+=quay.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
+            common.tags+=ghcr.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.tag }}-${{ env.TEST_TAG }}
 
       - name: Build Changelog
         if: steps.tagging.outputs.part
