@@ -10,6 +10,8 @@ on:
       - 'src/**'
       - 'Dockerfile'
       - 'Dockerfile.armv7'
+      - 'docker-bake.hcl'
+  workflow_dispatch:
 jobs:
   release:
     runs-on: ubuntu-latest
