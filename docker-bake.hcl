@@ -1,10 +1,8 @@
-# This variable will be populated by the github-tag-action output
 variable "TAG" {
   default = "latest"
 }
 
-# Define the common tags for all builds
-target "common-tags" {
+target "common" {
   tags = [
     "docker.io/kiwigrid/k8s-sidecar:latest",
     "docker.io/kiwigrid/k8s-sidecar:${TAG}",
@@ -15,30 +13,21 @@ target "common-tags" {
   ]
 }
 
-# Define the default build which will be a combination of the others
-group "default" {
-  targets = ["k8s-sidecar"]
+# Target for amd64 and arm64
+target "k8s-sidecar-main" {
+  inherits = ["common"]
+  dockerfile = "Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
-# Define the matrix build
-target "k8s-sidecar" {
-  inherits = ["common-tags"]
-  # build matrix for platforms using different dockerfiles
-  matrix = {
-    "platform-ext" = [
-      "",
-      ".armv7"
-    ]
-  }
-  dockerfile = "Dockerfile${matrix.platform-ext}"
-  # set the platform for each matrix entry
-  platforms = lookup({
-    "" = [
-      "linux/amd64",
-      "linux/arm64"
-    ]
-    ".armv7" = [
-      "linux/arm/v7"
-    ]
-  }, matrix.platform-ext)
+# Target for armv7
+target "k8s-sidecar-armv7" {
+  inherits = ["common"]
+  dockerfile = "Dockerfile.armv7"
+  platforms = ["linux/arm/v7"]
+}
+
+# The default group builds both targets
+group "default" {
+  targets = ["k8s-sidecar-main", "k8s-sidecar-armv7"]
 }
