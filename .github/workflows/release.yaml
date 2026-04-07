@@ -9,7 +9,6 @@ on:
     paths:
       - 'src/**'
       - 'Dockerfile'
-      - 'Dockerfile.armv7'
       - 'docker-bake.hcl'
 jobs:
   release:
@@ -73,9 +72,9 @@ jobs:
           files: |
             docker-bake.hcl
           set: |
-            common.tags+=docker.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
-            common.tags+=quay.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
-            common.tags+=ghcr.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
+            k8s-sidecar.tags=docker.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
+            k8s-sidecar.tags=quay.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
+            k8s-sidecar.tags=ghcr.io/kiwigrid/k8s-sidecar:${{ steps.tagging.outputs.new_tag }}
 
       - name: Build Changelog
         if: steps.tagging.outputs.part != '' && steps.tagging.outputs.part != 'none'
