@@ -5,7 +5,7 @@ import socket
 import threading
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from multiprocessing import Process
+from threading import Thread
 from typing import List
 
 from logger import get_log_config
@@ -13,7 +13,7 @@ from logger import get_log_config
 # Health state variables
 is_ready = False
 last_k8s_contact = datetime.now(timezone.utc)
-watcher_processes: List[Process] = []
+watcher_processes: List[Thread] = []
 
 # Settings
 K8S_CONTACT_THRESHOLD_SECONDS = 60  # tolerated delay before declaring not live
@@ -99,7 +99,7 @@ def update_k8s_contact():
     global last_k8s_contact
     last_k8s_contact = datetime.now(timezone.utc)
 
-def register_watcher_processes(processes: List[Process]):
+def register_watcher_processes(processes: List[Thread]):
     """
     Register the list of watcher threads to be monitored for liveness.
     """
