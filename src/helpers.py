@@ -72,7 +72,7 @@ def write_data_to_file(folder, filename, data, data_type=CONTENT_TYPE_TEXT):
             if e.errno == errno.EACCES:
                 logger.error(f"Error: insufficient privileges to create {folder}. "
                              f"Skipping {filename}.")
-                return
+                return False
 
     absolute_path = os.path.join(folder, filename)
     if os.path.exists(absolute_path):
